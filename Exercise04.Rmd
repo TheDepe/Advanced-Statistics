@@ -1,0 +1,141 @@
+---
+title: "Exercises04"
+author: "Dennis Perrett"
+date: "1/14/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+A <- data.frame(matrix(c(40,45,50,65,1,2,3,4,36,33,37,37),4,3))
+row.names(A) <- c(1,2,3,4)
+col.names <- c("Y","X1","X2")
+X <- cbind(1,as.matrix(A[,2:3]))
+y <- as.matrix(A[,1])
+betas <- solve((t(X)%*%X))%*%t(X)%*%y
+```
+
+**Exercise 16.** Exercise 16. In continuation of the previous exercise, consider the data for predicting the overall clinical impression based on the dose of an antipsychotic $X_1$ and days since hospitalization $X_2$ for four patients in a psychiatric hospital.
+Check the null hypothesis ($\alpha = 0.05$)
+$$H_0: \beta_1 = 8 \text{ and }\beta_2=0$$
+for the parameter estimates resulting for the regression model
+$$Y_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2} + \epsilon_i. \ \ \ \ (i=1,...,4)$$
+Perform the calculations by hand and using R.
+
+$$F=\frac{\frac{Q}{r}}{\frac{SS_{res}}{n-p-1}} = \frac{\frac{Q}{r}}{\hat{\sigma}^2}$$
+where 
+$$
+\begin{aligned}
+r &= rank\\
+Q &= ((\beta -\beta_{h0)})' \cdot [ c \cdot (X'X)^{-1}\cdot c ] \cdot (\beta - \beta_{h0}))\\
+n &= \text{number of observations}\\
+p &= \text{number of parameters X (being tested or total?)}
+\end{aligned}
+$$
+Therefore
+
+$$
+\begin{aligned}
+Q&= ((\beta -\beta_{h0)})' \cdot [ c \cdot (X'X)^{-1}\cdot c ]^{-1} \cdot (\beta - \beta_{h0})) = 0.4819277\\
+SS_{res} &= (\hat{y}-y)'(\hat{y}-y) = \\
+F&=\frac{\frac{Q}{r}}{\frac{SS_{res}}{n-p-1}} = \frac{\frac{Q}{r}}{\hat{\sigma}^2} = \frac{\frac{0.4819277}{2}}{\frac{29.51807}{4-2-1}} = 0.05502063 < F_{crit}=199.5
+\end{aligned}
+$$
+
+"By Hand" with R
+```{r}
+beta_h0 <- matrix(c(8,0),2,1)
+c <- matrix(c(0,0,1,0,0,1),2,3)
+beta_test = c%*%betas
+XX_inv <-solve(t(X)%*%X)
+q <- t(beta_test-beta_h0) %*% solve(c%*%XX_inv%*%t(c)) %*% (beta_test-beta_h0)
+q
+yhat <- X%*%betas
+ss.res <-  t(yhat-y)%*%(yhat-y)
+f <- (q/2)/(ss.res/4-2-1)
+qf(0.95,2,1)
+```
+
+**Exercise 17.** The data in file orthography.txt are taken from a diagnostic test of spel- ling difficulties in 5th and 6th graders from secondary schools in Baden-Württemberg. It includes information on the following variables:
+
+```{r include=F}
+dt <- read.table("../orthography.txt", header=T)
+```
+
+$$
+\begin{aligned}
+X_1 &\ \ CFT\ \ \ \ \text{Culture Fair Intelligence Test (Subtest 1)}\\
+X_2 &\ \ WM\ \ \ \ \ \text{Phonological working memory performance (subtest of VLMT)}\\
+X_3 &\ \ sex\ \ \ \ \ \ \ \text{Gender (dummy coded: 0 male, 1 female)}\\
+X_4 &\ \ school\ \ \text{School type (dummy coded: 0 Hauptschule, 1 Realschule)}\\
+X_5 &\ \ class\ \ \ \ \text{Grade level (dummy coded: 0 grade 5, 1 grade 6)}\\
+Y &\ \ score\ \ \ \ \text{Number of correct spellings for 20 words}\\
+\end{aligned}
+$$
+
+Answer the following questions in the context of linear regression analyses performed using R. For statistical tests assume a Type 1 error rate of $\alpha = 0.05$.
+
+a. Do the general cognitive abilities captured by $X_1$ and $X_2$ contribute to predicting
+spelling performance, and how large is the proportion of explained variance?
+```{r}
+m1 <- lm(score ~ CFT + WM, dt)
+summary(m1)
+```
+* Yes, $X_1$ and $X_2$ contribute to predicting $Y$. CFT significant at the 10% level, so for this analysis we would consider this not significant. WM is significant at the 1% level.
+
+
+b. Do the data meet the assumptions for conducting the regression analysis and the corresponding statistical tests? Perform appropriate graphical tests.
+
+The assumptions, among others are normally distributed Y values.
+```{r fig.width = 4, fig.height=4,fig.align='center'}
+qqnorm(dt$score)
+qqline(dt$score)
+hist(dt$score)
+```
+Both plots indicate the data could pass as normal. Given that n>30, we can assume normality based on the CLT.
+
+c. In order to decide whether there are gender-related differences, include variable $X_3$ as an additional predictor into the model.
+
+    * Specify the general gender-specific regression equations for male and female students.
+$$
+score_i = \beta_0 + \beta_1CFT_i + \beta_2WM_i + \beta_3sex_i + \epsilon_i
+$$
+  
+    * Does gender provide an additional contribution to the prediction of spelling performance? Convince yourself that the test of the regression coefficient $\beta_3$ as appearing in the output of summary() gives the same result as computing an incremental F-test (via function anova()) to the previously considered regression model with predictors $X_1$ and $X_2$.
+```{r}
+m2 <- lm(score ~ CFT + WM + sex,dt)
+summary(m2)
+anova(m1,m2)
+```
+The p-value for $sex$ = 0.00630. The P-value for the incremental f-test is also 0.00630.
+We can conclude that gender does contribute to the score of the spelling test.
+    
+c.
+    * How is the prediction of the regression model based on the predictors $X_1, X_2, \text{ and } X_3$ to be interpreted geometrically?
+    
+        * Each variable can be described as a different dimension (or axes). First, the value creeps along the first dimension until it reaches the appropriate X1 value, then it along second axis until it reaches the finaly point in space aka the prediciton.
+  
+d. Is it possible to identify the most significant predictor for spelling ability in a model including all the predictors $X_1, . . . , X_5$? Evaluate multicollinearity by considering bivariate intercorrelations and variance inflation factors.
+$$\begin{aligned}
+VIF =& \frac{1}{1-R^2_{model}}\\
+\text{where}\\
+model =& X_1 = \beta X\\
+\end{aligned}$$
+where $X$ does not include the independent X variable.
+
+
+```{r, fig.align='center', fig.width=4, fig.height=4}
+m3 <- lm(score ~ CFT + WM + sex + school + class, dt)
+summary(m3)
+heatmap(cor(dt))
+cor(dt)
+
+# VIF
+1/(1-summary(lm(school ~ WM + sex + class + CFT,data = dt))$r.squared)
+1/(1-summary(lm(WM ~ school + sex + class + CFT,data = dt))$r.squared)
+1/(1-summary(lm(sex ~ WM + school + class + CFT,data = dt))$r.squared)
+1/(1-summary(lm(class ~ WM + sex + school + CFT,data = dt))$r.squared)
+1/(1-summary(lm(CFT ~ WM + sex + class + school,data = dt))$r.squared)
+```
+Both correlations and VIF indicate no multicollinearity. VIFs are all very small < 5. Correlations are almost all below .. School correlations somewhat highly with score, but with no other predictor variables.
+

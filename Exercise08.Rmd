@@ -1,0 +1,131 @@
+---
+title: "Stats_ex_08"
+author: "Dennis Perrett"
+date: "12/16/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Exercise 23.** Hedeker and Gibbons (2006) report on a study designed to determine the efficacy of a school-based smoking prevention curriculum in conjunction with a television- based prevention program. The study was based on a (2 × 2)-factorial design with the factors prevention curriculum (yes = 1, no = 0) and TV prevention program (yes = 1, no = 0). Students were randomly assigned to one of the four groups at the school level. Students’ knowledge of tobacco-related health risks was assessed by administering the tobacco and health knowledge scale (THKS) before and after the intervention.
+
+a. Set up the general model equation of an analysis of covariance (i.e., the adjusted follow-up values) for this study, using the labels yi1 and yi2 for individual i’s THKS scores before and after the intervention. In addition, let ci = 1 if person i completes the intervention with prevention curriculum (ci = 0 otherwise), and let tvi = 1 if intervention is completed with TV prevention program (tvi = 0 otherwise).
+
+$y_{i2} = \beta_0 + \beta_1y_{i1} + \beta_2c_i +\beta_3tv_i + \beta_4c_itv_i + \epsilon$
+
+b. Interpret the parameters included in the model equation.
+
+    * $\beta_0$ represents the mean follow-up THKS score for subject not 
+    * exposed to either treatment.
+    * $\beta_1$ is the effect of the $y_i$ THKS scores.
+    * $\beta_2$ represents the mean difference from the baseline mean for subjects exposed to the ci treatment.
+    * $\beta_3$ represents the mean difference from the baseline mean for subjects exposed to the tv treatment.
+    * $\beta_4$ is there effect of the interaction term $c_i$ and $tv_i$, that is, what happens if someone has attended both treatments.
+
+c. Read the data contained in the file television.txt into R. (Note: Skip the data description at the beginning of the file in lines 1-42 by specifying the argument skip = 42 in the function read.table()).
+
+```{r}
+dat <- read.table("../television.txt",header=T,skip=42)
+riesby <- read.table("../reisby.txt",header=T)
+```
+
+
+d. Calculate means and standard deviations for baseline, follow-up, and change scores for each of the four groups separately. How many students are in each group? (Note: R help pages provide an example of the calculation of mean ozone and temperature values separately by month in the airquality data set included in R. Data may be accessed via data(airquality) and the calculation of month-specific means proceeds by
+aggregate(cbind(Ozone, Temp) ~ Month, data = airquality, mean) The number of cases may be determined using function length()).
+
+```{r}
+SD <- aggregate(cbind(pre, post,pre-post) ~ curri + tv, data = dat, sd)
+M <- aggregate(cbind(pre, post,pre-post) ~ curri + tv, data = dat, mean)
+N <- aggregate(cbind(pre, post, pre-post) ~ tv+curri, data = dat, length)
+SE <- M
+SE[,3:5] <- SD[,3:5]/sqrt(N[,3:5])
+```
+
+e. Plot the follow-up means as a function of the presence of the curriculum separately for the two TV conditions. What effects are you supposing? (Note: You may use function interaction.plot.)
+
+    * The plot suggests an interaction effect of curri and tv. This is suggested by the cross-over by the lines.
+
+```{r}
+plot(post ~ curri, M[M$tv == 1,], type="b",pch=19, ylim=c(2.3, 3.1), axes = F, xlim=c(-.1,1.1), xlab="curriculum", ylab="mean THKS-score [follow up]")
+points(post ~ curri, M[M$tv==0,], type="b", lty=2)
+axis(2)
+axis(1, at= 0:1, labels=c("No preventative curriculum","prevention curriculum"))
+legend("topleft",legend=c("no TV","TV"), pch=c(1,19), lty=c(2,1), bty="n", inset=0.05)
+arrows(c(0,1,0,1), M$post - SE$post, y1=M$post + SE$post, code=3, angle=90)
+box()
+```
+f. Perform an analysis of the follow-up scores (ANOVA), change scores, adjusted follow-up scores (ANCOVA), and adjusted change scores.
+
+    * Follow-up score analysis: Here we have no linear trends. We want to see if any of the `post` results are significantly different between the groups. If a coefficient is significant, we can interpret this as a real difference between follow up scores for each group, in that the group-treatment had an effect.
+    * The interaction coefficient `curri:tv` is significant at the 10% level, with a p-value of 0.018. We only interpret the interaction term, because again, the presence of an interaction terms, invalidates the interpretability of the main effects.
+    
+```{r}
+# Follow up scores
+m1 <- lm(post ~ curri*tv, dat)
+summary(m1)
+```
+
+    * For the change score analysis, we want to see if the groupings have made any difference to the size of the change in the ($y_{i2} - y_{i1}). The whole formula being $y_{i2} = \beta_0 + y_{i1} + \beta_1x_i + \epsilon$
+    * Here we see that the interaction term is significant p = 0.0411. 
+```{r}
+# Change score analysis
+m2 <- lm(post ~ offset(pre) + curri*tv, dat)
+summary(m2)
+```
+
+    * Adjusted follow-Up-score analysis (ANCOVA). As above, but we include a coefficient for the pre-score. $y_{i2} = \beta_0 + \beta_1y_{i1} + \beta_2x_i + \epsilon$
+    * Here we again conclude that the interaction term is significant. (p=0.0136). m
+    
+```{r}
+m3 <- lm(post ~ pre + curri*tv,dat)
+summary(m3)
+```
+
+
+g. Do the factors of the latter two models have identical effects on the change in knowledge?
+
+  * The effects of the two factors (curri, tv, & curri:tv) are identical in an ANCOVA and adjusted change score analysis. 
+  * $post = \beta_0 + \beta_1\times pre + \beta_2\times c + \beta_3\times tv + ....$
+  * $(post-pre) = \beta_0 + (\beta_1-1)\times pre + \beta_2\times c + \beta_3\times tv + ....$
+h. Answer the following questions based on the parameter estimates in the ANCOVA model:
+
+  * Do the two factors interact?
+  
+    - The assumption of no interaction hypothesis between curri and tv must be rejected (`p = 0.0136`). As such, Curri has a different effect depending on whether there was an addition TV prevention program, even after baseline adjustment.
+  * What is the mean THKS score expected as a follow-up value for the reference group($c_i =0,tv_i =0$) at a baseline value of $y_{i1} =0$?
+    - $\beta_0$ = `r coef(m3)[1]`.`
+    
+  * How large is the predicted change in knowledge in the remaining groups relative to the reference group?
+    - Reference group (`curri =0 , tv = 0`) =  `r predict(m3, data.frame(curri=0, tv =0 ,pre =0))`
+    - Ref group vs ($c_i = 1, tv_i=0$) = `r predict(m3, data.frame(curri=1, tv =0 ,pre =0))-predict(m3, data.frame(curri=0, tv =0 ,pre =0))` ($Y_d - Y_{base}$)
+    - Ref group vs ($c_i = 0, tv_i=1$)  = `r predict(m3, data.frame(curri=0, tv =1 ,pre =0))-predict(m3, data.frame(curri=0, tv =0 ,pre =0))` ($Y_d - Y_{base}$)
+    - Ref group vs ($c_i = 1, tv_i=1$) = `r predict(m3, data.frame(curri=1, tv =1 ,pre =0))-predict(m3, data.frame(curri=0, tv =0 ,pre =0))` ($Y_d - Y_{base}$)
+  * Determine the follow-up value predicted for the reference group and the group with $c_i =1 and tv_i =1$ at a baseline value of $y_{i1} =2$(median)?
+    - Reference group vs group with $c_i = 1, tv_i = 0$ 
+    
+i. Use graphical procedures to check the assumptions of the ANCOVA model.
+
+  * The assumptions are:
+    - Homoskedasticity (variance with respect to X remains the same): Residuals vs Fitted plot. Visually fine.
+    - Linearity (??): Visually ok.
+    - $Y\hat{Y}$ is normally distributed (QQ plot): Fine.
+    - Outliers (Which plot??): Visually ok. 
+```{r, echo=F, fig.align='center', fig.height=4, fig.width=6}
+par(mfrow = c(2,2))
+plot(m3)
+```
+
+
+j. Check the ANCOVA model’s assumption of identical slopes in the regression of the follow-up value on the baseline value in all groups with an appropriate statistical test (alpha = 0.05).
+
+  * The hypothesis is that the slopes in the regression are the same in all groups. This cannot be rejected at the 5% level as the anova test returns a probability of 10.5%. As such, the simpler model without the group specific slopes is preferred. 
+
+```{r}
+# Model with group specific slopes.
+m5 <- lm(post ~ pre * curri * tv, dat)
+#summary(m5)
+anova(m3,m5)
+```
+

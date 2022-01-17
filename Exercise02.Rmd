@@ -1,0 +1,201 @@
+---
+title: "Exercise02"
+author: "Dennis Perrett"
+date: "1/13/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Exercise 9.** A psychologist administers three subtests of an intelligence test. The first subtest covers verbal skills, while the other two subtests cover mathematical skills. The results of the three subtests are represented by a 3-vector $\textbf{x}$. The psychologist is interested in the overall score, which is the sum of the  three individual results, and a second value indicating whether the respondant's aptitude is more in the area of language or arithmetic. This value is calculated by subtracting the sum of the results in the two arithmetical subtests from the result in the verbal subtest. To avoid negative values, 20 is added to this difference. These two numbers are combined into a 2-vector $\textbf{y}$.
+
+a. Show that $\textbf{y}$ can be obtained through an affine transformation $\textbf{x} \rightarrow \textbf{Ax} + \textbf{b}$ by determining the matrix $\textbf{A}$ and the vector $\textbf{b}$.
+
+$$\textbf{y}=\textbf{A}\left(\begin{array}{c}7\\6\\2\end{array} \right) + \left(\begin{array}{c} 0\\20\end{array} \right)\\
+\textbf{y}=\left(\begin{array}{ccc}1&1&1\\1&-1&-1\end{array} \right)\left(\begin{array}{c}7\\6\\2\end{array} \right) + \left(\begin{array}{c} 0\\20\end{array} \right)\\
+$$
+
+b. Compute the $\textbf{y}$ values for a subject with results $$\textbf{x}' = (7,6,2)$$ in the three subtests.
+
+$$\textbf{y}=\left(\begin{array}{ccc}1&1&1\\1&-1&-1\end{array} \right)\left(\begin{array}{c}7\\6\\2\end{array} \right) + \left(\begin{array}{c} 0\\20\end{array} \right) = \left(\begin{array}{c} 15\\19\end{array} \right)$$
+
+**Exercise 10.** Which of the matrices 
+$A=\left(\begin{array}{cc} 1&2\\3&4\end{array} \right)$ and $B=\left(\begin{array}{cc} -4&2\\2&4\end{array} \right)$
+cannot be a covariance matrix?
+A. Cannot. Must be symmetrical along the diagonal.
+B. Cannot. Is symmetrical, but variance cannot be negative.
+
+**Exercise 11.** Let the ( 5 $\times$ 3)-matrix
+$$\textbf{X}=\left(\begin{array}{ccc} 2&1&8\\
+3&0&5\\
+3&1&4\\
+4&1&1\\
+3&2&2\\
+\end{array} \right)$$
+
+represent the data of 5 subjects in 3 variables. 
+Calculate by hand and using R:
+
+a. the mean-vector $\bar{x}$ and the variance-covariance matrix $\textbf{S}$;
+* $\bar{x} = (3,1,4)$
+
+* $$\textbf{S} =\left(\begin{array}{ccc} E[(x_{i1}-\bar{x_1})(x_{i1}-\bar{x_1})] &E[(x_1-\bar{x_1})(x_{i2}-\bar{x_2})] & E[(xi_{i1}-\bar{x_1})(x_{i3}-\bar{x_3})]\\E[(x_{i2}-\bar{x_2})(x_{i1}-\bar{x_1})] &E[(x_{i2}-\bar{x_2})(x_{i2}-\bar{x_2})] & E[(x_{i2}-\bar{x_2})(x_{i3}-\bar{x_3})]\\E[(x_{i3}-\bar{x_3})(x_{i1}-\bar{x_1})] &E[(x_{i3}-\bar{x_3})(x_{i2}-\bar{x_2})] & E[(x_{i3}-\bar{x_3})(x_{i3}-\bar{x_3})]\end{array} \right) $$
+$$\begin{aligned} E[(x_{i1}-\bar{x_1})(x_{i1}-\bar{x_1})]&=\\
+\frac{1}{5-1}\left((2-3)(2-3)+(3-3)(3-3)+(3-3)(3-3)+(4-3)(4-3)+(3-3)(3-3) \right) &=\\ \frac{1}{5-1}\left(1+0+0+1+0\right) = \frac{2}{4}\end{aligned}$$
+$$\begin{aligned}E[(x_{i2}-\bar{x_2})(x_{i2}-\bar{x_2})]&=\\
+\frac{1}{5}\left((1-1)(1-1)+(0-1)(0-1)+(1-1)(1-1)+(1-1)(1-1)+(2-1)(2-1) \right) &= \\ \frac{1}{5-1}\left(0+1+0+0+1\right) = \frac{2}{4}\end{aligned}$$
+$$\begin{aligned}E[(x_{i3}-\bar{x_3})(x_{i3}-\bar{x_3})]=\\
+\frac{1}{5}\left((8-4)(8-4)+(5-4)(5-4)+(4-4)(4-4)+(1-4)(1-4)+(2-4)(2-4) \right) &= \\ \frac{1}{5-1}\left(16+1+0+9+4\right) = \frac{30}{4} = 7.5\end{aligned}$$
+$$\begin{aligned}E[(x_{i1}-\bar{x_1})(x_{i2}-\bar{x_2})]=\\
+\frac{1}{5}\left((2-3)(1-1)+(3-3)(0-1)+(3-3)(1-1)+(4-3)(1-1)+(3-3)(2-1) \right) &= \\ \frac{1}{5-1}\left(0+0+0+0+0\right) = \frac{0}{4}=0\end{aligned}$$
+$$\begin{aligned}E[(x_{i1}-\bar{x_1})(x_{i3}-\bar{x_3})]=\\
+\frac{1}{5}\left((2-3)(8-4)+(3-3)(5-4)+(3-3)(4-4)+(4-3)(1-4)+(3-3)(2-4) \right) &= \\ \frac{1}{5-1}\left(-4+0+0+-3+0\right) = \frac{-7}{4}\end{aligned}$$
+$$\begin{aligned}E[(x_{i2}-\bar{x_2})(x_{i3}-\bar{x_3})]=\\
+\frac{1}{5}\left((1-1)(8-4)+(0-1)(5-4)+(1-1)(4-4)+(1-1)(1-4)+(2-1)(2-4) \right) &= \\ \frac{1}{5-1}\left(0+-1+0+0+-2\right) = \frac{-3}{4}=0 \end{aligned}$$
+
+$$\textbf{S} = \left(\begin{array}{ccc} \frac{2}{4} & 0 & \frac{-7}{4}\\ 0 & \frac{2}{4} &0\\ \frac{-7}{4} & 0 & 7.5 \end{array} \right)$$
+```{r}
+X <-matrix(c(2,1,8,3,0,5,3,1,4,4,1,1,3,2,2),5,3,byrow=T)
+cov(X)
+```
+
+
+b. the inverse $\textbf{S}^{-1}$ of the variance-covariance matrix;
+* $det(X)=((0.5*0.5*7.5)+(0)+(0))-((-1.75*0.5*-1.75)+(-0.75*-0.75*0.5)+(0)) = 1.875-1.53125-0.28125 = 0.0625$
+ $\frac{1}{0.625}\left(\begin{array}{ccc} 3.1875 & 1.3125 & 0.875\\ 1.3125 & 0.6875 & 0.375 \\ 0.875 & 0.375 & 0.25  \end{array} \right) = \left(\begin{array}{ccc} 51 & 21 & 14\\ 21 & 11 & 6 \\ 14 & 6 & 4  \end{array} \right)$
+c. the Mahalanobis distance from the data vector of subject 1 (column vector formed by 1st row of $\textbf{X}$) to the mean vector $\bar{x}$.
+$\sqrt{(x-\bar{x})^\top \textbf{S}^{-1}(x-\bar{x})} = \sqrt{ (-1,0,4)\textbf{S}^{-1}\left(\begin{array}{c} -1\\0\\4\end{array} \right)} = \sqrt{3} = 1.732$
+```{r}
+sqrt(mahalanobis(X,colMeans(X),cov(X)))
+sqrt( t(X[1,]-colMeans(X)) %*% solve(cov(X)) %*% (X[1,]-colMeans(X)) )
+```
+
+**Exercise 12.** The file "cheddar.txt" contains concentrations of various chemicals in 30 samples of mature cheddar cheese, and a subjective measure of taste for each sample. The columns, "Acetic", "H2S", and "Lactic" provide the concentration of acetic acid, hydrogen sulfide (both on a log scale) and lactic acid.  Input the data into R and define a data matrix **X** which stores the respective concentrations in three columns. Perform the following caluclations in R.
+
+```{r}
+dt <- as.matrix(read.table("../cheddar.txt",header=T))
+```
+a. Compute the mean vector $\bar{x}$ and the covariance matrix $\textbf{S}$
+```{r}
+x_bar <- colMeans(X)
+S <- var(X)
+```
+b. Determine the diagonal Matrix $\Lambda$ of eigenvalues and the matrix G of eigenvectors for S
+```{r}
+lambda <- eigen(S)$values
+G <- eigen(S)$vectors
+```
+c. Show by calculation that **G'S** = $\Lambda$
+```{r}
+zapsmall(t(G) %*% S %*%G)
+```
+
+d. Compute the total sample variance based on $S$ and $\Lambda$. What do you find? What is the reason for this observation?
+
+Total sample variance is the sum of the diagonal (trace) of the covariance matrix.
+```{r}
+sum(diag(S))
+sum(lambda)
+```
+The reason is, that the eigenvalues are a type of variance decomposition. 
+
+e. Compute the generalised sample variance for $S$ and compare the result with the product of the eigenvalues. What od you find? What is the reason for this observation?
+
+Generalised sample variance is the determinant of the covariance matrix.
+```{r}
+det(S)
+prod(lambda)
+```
+
+**Exercise 13.** The students participating in a course were randomly divided into two groups that recieved math lessons using different teaching methods. In a final test, overall scores were determined for pure arithmetic tasks (AT) and word problems (TT). The following scores were obtained for the two teaching methods:
+
+```{r}
+AT <- matrix(c(180,150,160,180,180,150,200,160),4,2,byrow=T)
+TT <- matrix(c(90,120,80,150,80,100,110,130),4,2,byrow=T)
+dt <- cbind(AT,TT)
+m1 <- cbind(dt[,1],dt[,3])
+m2 <- cbind(dt[,2],dt[,4])
+```
+
+Perform a multivariate statistical test by hand and using R to decide whether the two teaching methods differe with respect to the results.
+
+a. Which statistical hypothesis is tested?
+* mean(x,y|A) == mean(x,y|B) or are the 2 mean vectors the same?
+b. Identify the statistical assumptions on which the test is based?
+* Multivariate normality, Independence, and equal covariance matrices.
+c. Run the test for Type I error set to $\alpha = 0.05$ and thereby answer the question posed above.
+$$ T^2 = \frac{n*n}{n+n} [(x_1-x_2)^{\top} \cdot S^{-1} \cdot (x_1-x_2)]$$
+$$ S = \frac{1}{n+n-2}[(n-1)\cdot S_{1}+(n-1)\cdot S_{2}]$$
+$$ F = \frac{n+n-df_1-df_2}{(n+n-df_1)*2}\cdot T^2)$$
+
+```{r}
+n = length(m1)/2
+S <- (1/(n+n-2))*((n-1)*var(m1)+(n-1)*var(m2))
+t_sq <- (n*n)/(n+n)*t(colMeans(m1)-colMeans(m2))%*%solve(S) %*% (colMeans(m1)-colMeans(m2))
+f <- (n+n-2-1)/((n+n-2)*2) * t_sq
+p_val <- round(df(F,2,n+n-2-1),5)
+```
+With R
+```{r}
+library(Hotelling)
+ht2 <- hotelling.stat(m1, m1, shrinkage = FALSE, var.equal = TRUE)
+
+F <- (n+n-2-1)/((n+n-2)*2)*ht2$statistic
+p_val <- round(df(F,2,n+n-2-1),5)
+```
+
+$P-value$ < 0.05. Therefore we can conclude that the different methods make a difference. 
+
+d. Briefly discuss whether the assumptions are met. 
+* Probably not. Sample size is too small for robust statistics.
+
+e. Do the teaching methods differ when performing multiple univariate tests in the single variables. Adjust the Type 1 error using bonferroni correction.
+
+```{r}
+t.test(m1[,1],m2[,1]) # AT Difference
+p.adjust(.1145, method = "bonferroni", 
+         n = 4)
+```
+
+* No. They are not different on a univariate level.
+
+**Exercise 14.** Before and after a group dynamic training, four subjects rated their social anxiety and their striving for dominance in group situations on a 7 category Likert scale. The following results were obtained:
+```{r}
+pre = matrix(c(5,3,
+                4,3,
+                6,2,
+                6,3),4,2,byrow=TRUE)
+post = matrix(c(3,3,
+                4,4,
+                2,3,
+                4,3),4,2,byrow=TRUE)
+```
+
+a. Test by hand and using R whether the training has changed the attitude of the subjects. Assume multinormally distributed values, and a Type I error of $\alpha = 0.05$.
+
+$$T^2 = n \cdot \vec{d}' S^{-1}_d \cdot \vec{d}$$
+
+```{r}
+d <- pre-post
+n = length(d)/2
+d_means <- colMeans(d)
+d_means_mat <-matrix(d_means,4,2,byrow=T)
+S = (1/(n-1))*t(d-d_means_mat)%*%(d-d_means_mat)
+S_inv = solve(S)
+
+T_sq <- n * t(d_means) %*% S_inv %*% d_means
+p = 2 #(number of parameters?)
+f = (n-p)/((n-1)*p) * T_sq
+f>qf(0.95,2,2)
+```
+We can not reject the null that the 2 means are different.
+
+
+b. If the multivariate test is not significant, does it then make sense to perform univariate tests on each of the two dependent variables? Provide reasons for your answer.
+
+* No. It does not make sense. The range (confidence interval) for multivariate significant difference reaches only to the limits of the univariate confidence intervals. That is, if it is insignificant at the multivarite level, the underlying data cannot be significant at the univariate level. 
+
+* Inversely, this however is not the case. The univariate data may insignificant, but at the multivariate level, the data may significantly differ between groups.
+

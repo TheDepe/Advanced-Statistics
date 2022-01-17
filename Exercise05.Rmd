@@ -1,0 +1,215 @@
+---
+title: "Exercises05"
+author: "Dennis Perrett"
+date: "1/14/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align="center")
+```
+***Exercise 18.*** The marketing department of a cosmetics company is conducting an expe- riment to study the effect of alternative design variants of a product on the sales. Sales (in units per 1000 customers) are monitored in 24 randomly selected stores (either (1) drugstores or (2) perfumeries). The design variants are (1) conservative, (2) neutral and (3) modern. The following data on the sales are available:
+
+![]("../ex5table.png"){width=50% height=50%}.
+```{r echo=F}
+dt <- read.table("../ex05.csv",header=T,sep=";")
+m1 <- lm(sales ~ design*store,dt)
+summary(m1)
+anova(m1)
+```
+
+Interpret these results by answering the following questions:
+
+a. Which statistical model was used in analysing the data? 
+
+  * linear regression?
+b. Specify the hypothesis that may be investigated.
+
+  * $\beta_0 = \beta_1 = \beta_i = 0$
+c. Which value is to be checked, or which values are to be checked in order to decide whether there is an effect of product design on sales?
+
+  * design:store in the anova table. We look at this value, because the interaction term renders the base term (design) uninterpretable.
+d. What do you conclude on this effect ($\alpha = 0.05$)?
+
+  * P-values etc associated with design:store is significant (0.00871) at the 5% level. From this we can conclude that the type of store design has an effect on sales.
+e. Sketch the results of the experiment (abscissa: design variants; ordinate: average sales per group) and explain how an interaction effect is (or, would be) represented graphically.
+  * The cross over between the 2 lines indicates significance. An interaction effect would be represented by a new axis.
+```{r, echo=F,fig.width=5,fig.height=5,fig.align='center'}
+m_dc <-mean(dt[(dt$design=="conservative")&(dt$store=="drugstore"),"sales"])
+m_pc <-mean(dt[(dt$design=="conservative")&(dt$store=="perfumaries"),"sales"])
+m_dm <-mean(dt[(dt$design=="modern")&(dt$store=="drugstore"),"sales"])
+m_pm <-mean(dt[(dt$design=="modern")&(dt$store=="perfumaries"),"sales"])
+m_dn <-mean(dt[(dt$design=="neutral")&(dt$store=="drugstore"),"sales"])
+m_pn <-mean(dt[(dt$design=="neutral")&(dt$store=="perfumaries"),"sales"])
+means_d <- c(m_dc,m_dn,m_dm)
+means_p <- c(m_pc,m_pn,m_pm)
+plot(y=means_p,x=c(1,2,3),type="b",col="red",pch=15,xlab="Store design",ylab="Avg sales",ylim=c(67,74))
+lines(y=means_d,x=c(1,2,3),type="b",col="blue",pch=19)
+legend(1,74.2,c("Drugstores","Parfumaries"),col=c("blue","red"),pch=c(19,15))
+```
+f. Which marketing strategy is (i.e. which product design in which store) would you recommend based on the results?
+  * It depends on the store type. This is visible in the graph. Store design 3 (modern) performs best for parfumaries. Stores design 1 (conservative) performs best for drug stores.
+
+g. The analysis is based on the general linear model
+$$ Y_{ijk} = \mu_0 + \alpha_i + \beta_j + (\alpha\beta)_{ij} + \epsilon_{ijk} $$
+with independent and normally distributed errors $\epsilon_{ijk} \sim \mathcal{N}(0,\sigma^2)$, and $\mu_0$ the mean sales (total expected value). Provide estimates for the parameters $\mu_0, \alpha_i, \beta_j, (\alpha\beta)_{ij},$ and $\sigma^2$.
+
+$$\begin{aligned}
+\mu_0 &= 73.5\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  \text{Overall intercept. (In original case 69.9)}\\
+\alpha_i &= (-5.750,-4.000, 9.750) \ \ \ \ \ \ \ \ \ \ \ \text{The change dependent on design type.}\\
+&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \text{(Original example (0.458, -0.6667, 0.2087))}\\
+\beta &= (-6.250, 6.250)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \text{Shift in intercept based on store type.}\\
+&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \text{(Original case (0.333,-0.333))}\\
+(\alpha\beta)_{ij} &= \left(\begin{array}{cc}11.000&-11.000\\5.750&-5.750\\16.750 & -16.750\end{array}\right)\ \ \ \ \ \ \ \ \ \ \ \ \ \text{Interaction term ceofficients. Rows and columns must sum to 0.}\\
+&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \text{Original exercise:}\left(\begin{array}{cc}2.79&-2.79\\-0.083&0.083\\-2.708 & 2.708\end{array}\right)\\
+\sigma^2 &= 3.114^2 = 9.6969\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \text{Squared Residual deviance.}
+\end{aligned}$$
+
+**Exercise 19.** In the context of a methadone program, a study by Anglin, McGlothin & Speckart (1981) examined a sample of 647 heroin addicts. The following variables were collected:
+
+$$\begin{aligned}
+C &\ \ \ \ \ \text{County of residence: urban, suburban, rural}\\
+S &\ \ \ \ \ \text{Socioeconomic status (low, not low)}\\
+P &\ \ \ \ \ \text{Parents available till 16: yes, no}
+\end{aligned}$$
+The dependent variable F indicates whether or not the first heroin use was before the 18th birthday. The following frequencies were observed:
+
+```{r, echo=F}
+dat <- data.frame(
+  C = rep(c("urban", "suburban", "rural"), each = 2),
+  S = rep(c("low", "not"), each = 6),
+  P = rep(c("yes", "no"), each = 12),
+  fUse = rep(c("<18", ">=18"), each = 1),
+  freq = scan(text = 
+                "32 65 21 20 10 40
+                34 97 14 28 8 23
+                41 42 18 22 6 13
+                41 45 3 13 1 10"))
+dat <- reshape(dat, idvar = c("C","S", "P"), timevar = "fUse", direction = "wide")
+names(dat) <- c("C", "S", "P", "yes", "no") # yes: first use before 18; no: after 18
+
+# convert to factors
+dat$C <- factor(dat$C, levels = c("urban", "suburban", "rural"))
+dat$S <- factor(dat$S, levels = c("low", "not"))
+dat$P <- factor(dat$P, levels = c("yes", "no"))
+lm2 <- glm(cbind(yes, no) ~ S+ C + P  + C*P,binomial, dat)
+summary(lm2)
+
+```
+
+Calculate by hand and with R
+
+a. Specify the underlying design matrix X. Arrange columns according to the sequence of parameter estimates in the above table.
+
+$$
+X = \left(\begin{array}{ccccccc}1&1&1&0&1&1&0\\
+1&1&0&1&1&0&1\\
+1&1&0&0&1&0&0\\
+1&0&1&0&1&1&0\\
+1&0&0&1&1&0&1\\
+1&0&0&0&1&0&0\\
+1&1&1&0&0&0&0\\
+1&1&0&1&0&0&0\\
+1&1&0&0&0&0&0\\
+1&0&1&0&0&0&0\\
+1&0&0&1&0&0&0\\
+1&0&0&0&0&0&0
+\end{array}\right)
+$$
+```{r}
+model.matrix(lm2)
+```
+b. Determine the data vector $\vec{x}$ of a heroin addict who grew up without parents in the suburbs, and has low socioeconomic status.
+  * $\vec{x} = (1, 1, 0,1,0,0,1)$
+  
+c. What are the odds and the probability predicted by the model for this person?
+  * Log-Odds: $(-1.416+0.34585+0 +0.65490 + 0 + 0 +0.33017 = -0.4153013$
+  * Odds: $e^{Log-Odds} = e^{-0.4153013} = 0.6601413$
+  * Probability: $\frac{1}{1+e^{-Log-Odds}} = \frac{1}{1+e^{0.4153013}} = 0.3976416$
+
+```{r}
+x = matrix(c(1,1,0,1,0,0,0),1,7)
+log.odds <- x%*%lm2$coefficients
+odds <- exp(log.odds)
+prob <- 1/(1+exp(-log.odds))
+
+```
+
+d. Compute the odds for a person who, all other things being equal (ceteris paribus), has no low socioeconomic status. Compute the odds ratio of the previously considered person compared to this person?
+
+  * Log-Odds: $(-1.416+0+0 +0.65490 + 0 + 0 +0.33017) = -0.7611535$
+  * Odds: $e^{Log-Odds} = e^{-0.7611535} = 0.4671273$
+  * Probability: $\frac{1}{1+e^{-Log-Odds}} = \frac{1}{1+e^{0.7611535}} = 0.3183959$
+  * Odds ratio: $\frac{e^{-1.41606}\cdot e^{0.34585}\cdot e^{0.33017}\cdot e^{0.65490}}{e^{-1.41606}\cdot e^{0.33017}\cdot e^{0.65490}} = e^{0.34585} = 1.413191$
+  
+```{r}
+x = matrix(c(1,0,0,1,0,0,0),1,7)
+log.odds <- x%*%lm2$coefficients
+odds <- exp(log.odds)
+prob <- 1/(1+exp(-log.odds))
+```
+
+e. How does the result of the preceding computation relate to the estimated value of the parameter associated with S $low$ in the table?
+
+  * Normally we cannot interpret non-interaction terms, when interaction terms are included. In this case, the interaction term(s) are all 0. As such, the rest of the terms are interpretable. The odds are 1.41 times greater for someone with low socio-economic status (ceteris paribus) compared to someone with high socio-economic status.
+  
+f.  Interpret the effect of the availability of the parents by age 16 on the time of first heroin use according to the model. 
+
+  * $exp(-0.5805) = 0.944$. This is close to one. Availability has little effect as odds are only 0.944 times. 
+
+g. Decide whether the data are appropriately described by the model ($\alpha = 0.05$). (Hint: $\chi^2_{0.95}(5) = 11.07$). 
+
+  * $H_0$: Saturated model does not describe the data better than the given model. 
+  * Residual variance = 6.2088. 6.2088 < 11.07. Cannot reject null: saturated model is not better than given model. Model is good. 
+
+
+**Exercise 20.** Costa et al. (2014) report data of experiments that they interpret as evidence for a so-called ’foreign language effect on framing’. This involves the preference for a positively framed (presented as a gain) over a negatively framed (presented as a loss) safe option over a risky option in a decision task, which is supposed to be less pronounced when presented in a foreign language compared to the respective native language. In one of the experiments they obtain the following data (Costa et al., 2014, Table 1, Experiment AD1):
+
+```{r, echo=F}
+dat2 <- read.table(textConnection("
+safe risky L Fr
+42 20 native gain
+21 41 native loss
+41 20 foreign gain
+31 31 foreign loss
+"),header=TRUE)
+dat2$L <- factor(dat2$L, levels=c("foreign","native"))
+dat2$Fr <- factor(dat2$Fr, levels=c("gain","loss"))
+dat2
+```
+
+Use R (Type I error $\alpha = 0.05$) to show:
+
+a. that a significant result in terms of a framing effect results for the 2 × 2 table for the native language, whereas this is not the case for the 2 × 2 table for the foreign language,
+
+```{r}
+glm2 <- glm(cbind(safe, risky) ~ Fr,binomial, dat2[dat2$L == "native",])
+glm3 <- glm(cbind(safe, risky) ~ Fr, binomial, dat2[dat2$L == "foreign",])
+glm4 <- glm(cbind(safe, risky) ~ Fr + L + Fr*L, binomial, dat2)
+
+summary(glm2) # Gain is significant
+summary(glm3) # Gain is insignificant
+```
+
+b. that, however, a ’foreign language effect on framing’ cannot be demonstrated.
+
+```{r}
+summary(glm4) # Framing effect is insignificant
+```
+
+
+(Note: In two other experiments, basically the same picture emerges, so that an integrative evaluation of the data across all three experiments arrives at the same conclusion).
+
+Alternative solutions:
+
+```{r}
+chisq.test(as.matrix(dat2[dat2$L == "native",1:2]),correct=F) # Significant
+chisq.test(as.matrix(dat2[dat2$L == "foreign",1:2]),correct=F) # Insignificant
+
+glm5 <- glm(cbind(safe, risky) ~ Fr + L, binomial, dat2)
+glm6 <- glm(cbind(safe, risky) ~ Fr * L, binomial, dat2)
+
+summary(glm6)
+anova(glm5, glm6, test="LRT")
+```
+

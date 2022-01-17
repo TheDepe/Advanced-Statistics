@@ -1,0 +1,199 @@
+---
+title: "Stats Exercise 1"
+author: "Dennis Perrett"
+date: "1/13/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+**Task 1.** The following table lists the standarized values that three persons $P_1$, $P_2$ and $P_3$ from a sample provided in tests $X_1$ and $X_2$:
+
+
+           $X_1$              $X_2$
+--------   --------------   ----------------
+$P_1$           2                1
+$P_2$         1                -2
+$P_3$         -2               4
+---------  --------------   ----------------
+
+a. Enter the person specific values as column vectors $\vec{p_1}$, $\vec{p_2}$ and $\vec{p_3}$ and draw them as vectors in the variable space spanned by $X_1$ and $X_2$.
+```{r, echo=F,fig.align = 'center', fig.height=4, fig.width=5}
+p1 <- c(2,1)
+p2 <- c(1,-2)
+p3 <- c(-2,4)
+
+mat <- cbind(p1,p2,p3)
+plot(NULL,xlim=c(-4,4),ylim=c(-4,4),ylab="X1",xlab="X2",main="Vectors in X1,X2 Space")
+arrows(rep(0,4), rep(0,4), mat[1,], mat[2,])
+text(x=mat[1,], y=mat[2,]+0.1, 0, labels=c("P1","P2","P3"))
+abline(v=0)
+abline(h=0)
+```
+
+
+b. Is the system of vectors $\vec{p_1}$, $\vec{p_2}$ and $\vec{p_3}$ linearly independent? Justify your decision both graphically and geometrically, as well as formally via the definition of linear independence.
+
+  * Graphically: No. $P_1$ and $P_2$ form a straight line. 
+  * Geometrically:
+  * Analytically: $c\cdot \vec{P_3} = \vec{P_2} \rightarrow -0.5\cdot \vec{P_3} = \vec{P_2}$
+
+**Task 2**
+
+$$A=\left( 
+\begin{array}{ccc}
+1 & 0 & 0 \\
+1 & 1 & 2\\
+2 & 2 & 3
+\end{array}
+\right),\ 
+B=\left( 
+\begin{array}{cc}
+0 & 1 \\
+2 & -1\\
+3 & 0
+\end{array}
+\right),\ 
+C=\left( 
+\begin{array}{ccc}
+1 & 1 & 2 \\
+0 & 1 & 1\\
+0 & 1 & 2
+\end{array}
+\right),\ 
+and\ D=\left( 
+\begin{array}{ccc}
+4 & 1 & 0 \\
+0 & 5 & 0
+\end{array}
+\right)
+$$
+
+Identify the sums **A + B, A + C, A + D, B + D** and products **AB, AC, AD, BD** that are properly defined. Specify the number of rows and columns of the resulting matrices and calculate them by hand and using R. 
+
+* A+B, doesn't work. Non-conforming dimensions.
+* A+C = $\left( \begin{array}{ccc}2&1&2\\1&2&3\\2&3&5 \end{array}\right)$
+* A+D,  doesn't work. Non-conforming dimensions.
+* B+D,  doesn't work. Non-conforming dimensions.
+* AB: (3x3,3x2) -> 3x2: 0x1+2x2+3x0=0,1x1+0x-1+0x0 = 1... 0x1+2x1+3x2=8, 1x1+-1x1+0x2=0...
+$\left( \begin{array}{cc}0&1\\8&0\\13&0 \end{array}\right)$
+* AC (3x3,3x3)-> 3x3: 1x1 + 0x0 +0x0 = 1, 1x1 +0x1 + 0x1 = 1, 2x1+1x0+2x0=2...    
+$\left( \begin{array}{ccc}1&1&2\\1&1&3\\2&7&12 \end{array}\right)$ 
+* AD (3x3 , 2x3), doesn't work. Non-conforming dimensions.
+* BD (3x2, 2x3) -> 3x3: 4x0+0x1=0, 1x0+5x1=1, 0x0+0x1 = 0...
+$\left( \begin{array}{ccc}0&5&0\\8&-3&0\\12&3&0 \end{array}\right)$ 
+
+```{r}
+a<-matrix(c(1,0,0,1,1,2,2,2,3),3,3,byrow=T)
+b<-matrix(c(0,1,2,-1,3,0),3,2,byrow=T)
+c <- matrix(c(1,1,2,0,1,1,0,1,2),3,3,byrow=T)
+d <- matrix(c(4,1,0,0,5,0),2,3,byrow=T)
+#a+b
+a+c
+#a+d
+#b+d
+a%*%b
+a%*%c
+#a%*%d
+b%*%d
+```
+
+**Task 3.** Let $\vec{x}$ be a n-vector and $\vec{1}$ be the n-vector consisting of ones exclusively. 
+
+  a. Compute the products $\vec{1}$'$\vec{1}$, and $\vec{1}$$\vec{1}$'.
+  $\vec{1}'\vec{1}=\sum_n{1\cdot1} = n$
+  $\vec{1}\vec{1}'= (n\times n)\cdot 1$ (n x n) matrix of ones.
+  
+  b. What do we get by computing $\frac{1}{n}\vec{1}'\vec{x}$?
+  $\frac{1}{n}\vec{1}'\vec{x} = \sum_n1\cdot x \cdot \frac{1}{n} = \bar{x}$
+  
+  ** Task 4.** Let the vectors **x,y** and the matrix **A** be given by
+  $$x=\left(\begin{array}{c}7\\4\\1 \end{array}\right), y=\left(\begin{array}{c}3\\5 \end{array}\right),A=\left(\begin{array}{ccc}2&7&1\\3&0&4 \end{array}\right).$$
+  
+Solve the following problems by hand and using R.
+
+a. Calculate (whenever defined) $\vec{x}'\vec{x}$, $\vec{x}\vec{x}'$, $\vec{x}\vec{y}$, $\vec{x}'\vec{y}$ and $\vec{x}\vec{y}'$
+* $\vec{x}'\vec{x}= 7^2+4^2+1^2=66$
+* $\vec{x}\vec{x}'= 7*7,7*4,7*1... = \left(\begin{array}{ccc} 49 & 28 & 7\\28&16&4\\7&4&1 \end{array}\right)$
+* $\vec{x}\vec{y}$ Doesn't work. Non-conforming dimensions (3x1, 2x1).
+* $\vec{x}'\vec{y}$ Doesn't work. Non-conforming dimensions (1x3, 2x1).
+* $\vec{x}\vec{y}' = 7*3, 7*5.. 4*3, 4*5.. 1*3, 1*5... = \left(\begin{array}{cc} 21 & 35 \\12&20\\3&5 \end{array}\right)$
+b. Specify **Ax** and **x'A'**.
+* $A\vec{x} =  \left(\begin{array}{c} 7*2 + 4*7 + 1*1\\7*3+4*0+1*4 \end{array}\right) = \left(\begin{array}{c}43\\25 \end{array}\right)$
+* $x'A' = (Ax)' = \left(\begin{array}{ccc} 70&40&10\\49&28&7\end{array}\right)$
+c. Calculate trace and determinant for **x'x** and **xx'**.
+* $Trace(66) = 66$
+* $Det(66) = 66$
+* $Trace(\left(\begin{array}{ccc} 49 & 28 & 7\\28&16&4\\7&4&1 \end{array}\right)) + 49 +16 +1 = 66$
+* $Det(\left(\begin{array}{ccc} 49 & 28 & 7\\28&16&4\\7&4&1 \end{array}\right))=(49*16*1+28*4*7+7*28*4)-(7*16*7+4*4*49+1*28*28) = 2352-2352 = 0$
+d. Are row or column vectors, respectively, in **xx'** linearly independent?
+* Rows: No. $r_3 \cdot 4 = r_2$,$r_3 \cdot 7 = r_1$
+* Columns: No. $c_3 \cdot 4 = c_2$,$c_3 \cdot 7 = c_1$
+
+**Task 5*. ** The set of all real (2 $\times$ 2) matrices forms a vector space with respect to matrix addition and scalar multiplication. Specify a base for this vector space by showing:
+
+a. that every arbitrary matrix $$A = \left( \begin{array}{cc}a_{11} & a_{12}\\ a_{21} & a_{22} \end{array}\right)$$ with $a_{11}, a_{12}, a_{21}, a_{22} \in R$ can be expressed as a linear combination of the elements of the basis;
+* Bases = $e_1=\left( \begin{array}{cc}1 & 0\\ 0 & 0 \end{array}\right),e_2=\left( \begin{array}{cc}0 & 1\\ 0 & 0 \end{array}\right),e_3=\left( \begin{array}{cc}0 & 0\\ 1 & 0 \end{array}\right),e_4=\left( \begin{array}{cc}0 & 0\\ 0 & 1 \end{array}\right)$. Therefor:$e1\cdot A + e2\cdot A + e3\cdot A + e4\cdot A = A$ 
+
+b. that the elements of the basis are linearly independent.
+* $a_1(a_{11},a_{21}) + a_2(a_{21},a_{22}) = 0$
+
+**Task 6.** Given the matrix $$\textbf{A}=\left( \begin{array}{cc}4 & 5 \\ -2 & 1 \end{array}\right),$$
+solve the following problems by hand and using R.
+a. Is $\textbf{A}$ invertible? Why/ Why not?
+* Yes. Is square and has a determinant.
+b. If yes, calculate $\textbf{A}^{-1}$
+$\textbf{A}^{-1} = \frac{1}{det(\textbf{A})}\left(\begin{array}{cc}1&-5\\2&4\end{array}\right), det(\textbf{A}) = 14 \rightarrow \frac{1}{14}\left(\begin{array}{cc}1&-5\\2&4\end{array}\right)=\left(\begin{array}{cc}\frac{1}{14}&\frac{-5}{14}\\\frac{2}{14}&\frac{4}{14}\end{array}\right)= \left(\begin{array}{cc}0.07&-0.357\\0.143&0.286\end{array}\right)$
+
+c. Check if $\textbf{A}\textbf{A}^{-1} = \textbf{I}$
+d. Which vectors $\textbf{x}$ fulfill the equation:$$\textbf{Ax} = \left(\begin{array}{c}2\\6\end{array} \right)?$$
+* if$\textbf{Ax} = \textbf{b}, then \textbf{A}^{-1}\textbf{b} = \textbf{x}$
+* $\left(\begin{array}{cc}0.07&-0.357\\0.143&0.286\end{array}\right) \cdot \left(\begin{array}{c}2\\6\end{array} \right) = \left(\begin{array}{cc}0.07*2&-0.357*6\\0.143*2&0.286*6\end{array}\right) = \left(\begin{array}{cc}0.07*2&-0.357*6\\0.143*2&0.286*6\end{array}\right) = \left(\begin{array}{cc}-2\\2\end{array}\right)$
+
+**Task 7.** Determine the number $a$ such that the two vectors are orthogonal $$\textbf{x} = \left(\begin{array}{c}2\\1\\3 \end{array}\right), \textbf{y} = \left(\begin{array}{c}-2\\a\\5 \end{array}\right)$$
+
+Orthogonal = $x \cdot y = 0$.
+$$
+0 = 2*-2 + 1*a + 3*5\\
+= -4 + a + 15 = 0\\
+= a = -11
+$$
+
+**Task 8.** The points in $R^2$ given by the vectors
+$$\textbf{x}=\left(\begin{array}{c}2\\-1\end{array} \right), \textbf{y}=\left(\begin{array}{c}4\\-1\end{array} \right), \textbf{z}=\left(\begin{array}{c}3\\2\end{array} \right)$$ define a triangle in the coordinate plane. Calculate the result of multiplying these vectors with the matrices:
+$$\textbf{A}=\left(\begin{array}{cc}-0.707&-0.707\\0.707&-0.707\end{array} \right), \textbf{B}=\left(\begin{array}{cc}1&0\\0&1\end{array} \right), \textbf{C}=\left(\begin{array}{cc}0.5&0\\0&0.5\end{array} \right)$$
+(multiply in the order matrix-vector).
+
+Illustrate the respective transformations of the triangle graphically, and provide geometric interpretations of the associated linear mappings.
+
+```{r fig.width=4,fig.height=4, fig.align='center'}
+x <- matrix(c(2,-1),2,1)
+y <- matrix(c(4,-1),2,1)
+z <- matrix(c(3,2),2,1)
+A <-matrix(c(-0.707,-0.707,0.707,-0.707),2,2,byrow=T)
+B <-matrix(c(1,0,0,-1),2,2,byrow=T)
+C <-matrix(c(0.5,0,0,0.5),2,2,byrow=T)
+
+t1 <- rbind(t(x),t(y),t(z))
+t1a <- rbind(t(A%*%x),t(A%*%y),t(A%*%z))
+t1b <- rbind(t(B%*%x),t(B%*%y),t(B%*%z))
+t1c <- rbind(t(C%*%x),t(C%*%y),t(C%*%z))
+plot(NULL,xlim=c(-5,5),ylim=c(-5,5),xlab="X",ylab="Y")
+polygon(t1,border="black")
+polygon(t1a,border="red")
+polygon(t1b,border="blue")
+polygon(t1c,border="yellow")
+abline(h=0)
+abline(v=0)
+```
+
+* A (red) rotates the triangle.
+* B (blue) flips the triangle.
+* C (yellow) scales the triangle.
+
+
+
+  

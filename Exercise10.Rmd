@@ -1,0 +1,177 @@
+---
+title: "Exercise10"
+author: "Dennis Perrett"
+date: "1/16/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lme4)
+library(lattice)
+dat <- read.table("../hsbdataset.txt", header=T)
+dat$school <- factor(dat$school)
+```
+
+**Exercise 26.** Reconsider the data from the national survey “High School & Beyond” in U.S. public and Catholic high schools from the National Center for Education Statistics (NCES), which were already discussed in the lecture. Read the data into R from the file `hsbdataset.txt` as indicated in the lecture. Base statistical tests on $\alpha = 0.05$ and specify the corresponding null hypotheses.
+
+```{r}
+m1 <- lmer(mathach ~ meanses*cses + sector*cses + (1 + cses|school), dat, REML=F )
+```
+
+
+a. The parameter estimates of the considered linear mixed model (Model 1) suggested a simplification, where, concerning the dependence of math achievement on `cses`, the intercept but not the slope varies across schools. Formulate the model equations for this Model 2 at both levels and derive the respective model equation.
+
+  * Above, we see that no coefficients whatsoever are significant. This suggests a simplification (or perhaps nothing works anyway.)
+  
+$$
+\begin{aligned}
+\text{(Level 1) }y_{ij} &= b_{0i} + b_{1j}\text{cses}_{ij} + \epsilon_{ij}\\
+\text{(level 2) }b_{0i} &= \beta_0 + \beta_2\text{meanses} + \beta_3\text{sector}_{i} + v_{0i}\\
+b_{1i} &= \beta_1 + v_{1i}\\
+\text{(2) in (1) } y_{ij} &= \beta_0 + \beta_1\text{cses}_{ij} + \beta_2\text{meanses}_{i} + \beta_3\text{sector}_{i} + v_{0j} + v_{1j}\text{cses}_{ij} + \epsilon_{ij}
+\end{aligned}
+$$
+
+b. For Model 2, calculate the ML parameter estimates using the function `lmer()` from the R package `lme4` and compare Models 1 and 2 with a likelihood ratio test.
+```{r}
+m2 <- lmer(mathach ~ meanses*cses + sector*cses + (1 |school), dat, REML=F )
+anova(m1,m2)
+```
+  * Here the results are insignificant. Simplification has not helped.
+
+c. Perform a likelihood ratio test with an appropriately restricted Model 3 to show that the interaction of `cses` and `meanses` contained in Model 2 is necessary for predicting the data.
+  * Below, we see that m2 is significantly better at prediction than model3. This confirms what we read above, that the interaction term is important for prediction of maths achievement.
+
+```{r}
+m3 <- lmer(mathach ~ meanses+cses + sector*cses + (1 |school), dat, REML=F )
+anova(m2,m3)
+```
+
+
+d. What is the interpretation of a model prediction based on fixed effects only?
+  * The fixed effects coefficients predict the mean (in this case maths achievement), without consideration of the individual differences (random effects).
+
+
+
+e. The following R code produces a graphical illustration of the model prediction of
+Model 2 for public high schools (`sector` = 0) based on the fixed effects.
+
+```{r, fig.align='center'}
+c <- seq(-2, 2, length=51)
+m <- seq(-1, 1, length=26)
+ndat <- expand.grid(c, m)
+colnames(ndat) <- c("cses", "meanses")
+ndat$sector <- factor(0, levels=c("0", "1"))
+lmm.2 <- m2
+z <- matrix(predict(lmm.2, newdata=ndat, re.form=NA), 51)
+persp(c, m, z, theta=40, phi=20, col="lightblue", ltheta=60, shade=.9,
+         xlab="cses", ylab="meanses", zlab="mathach", main="Model 2")
+```
+
+   e. (cont.) Create a corresponding graphical illustration for the public high schools under Model 3. Comparing the illustrations, describe how the interaction effect included in Model 2 is represented graphically.
+   
+```{r, fig.align='center'}
+c <- seq(-2, 2, length=51)
+m <- seq(-1, 1, length=26)
+ndat <- expand.grid(c, m)
+colnames(ndat) <- c("cses", "meanses")
+ndat$sector <- factor(0, levels=c("0", "1"))
+lmm.2 <- m2
+z <- matrix(predict(m3, newdata=ndat, re.form=NA), 51)
+persp(c, m, z, theta=40, phi=20, col="lightblue", ltheta=60, shade=.9,
+         xlab="cses", ylab="meanses", zlab="mathach", main="Model 2")
+```
+The interaction effect in m2 works by shifting the plane in the closest corner downward. Conceptually, this is because the interaction term, removes a portion of the predictive power from the `cses` and `meanses` coefficients, and gives this predictive power to the interaction term. This means, that the remaining `cses` coefficient, only holds the power for pure `cses` changes. As such, the coefficient is likely to be smaller. In return, the `cses:meanses` interaction term allows a much more (assuming it accurately represents the data) accurate relationship between y and X. Given the interaction term will take values close to 0 when either term is close to 0, this results in the plan in the image of model2 above, to be much closer to 0 in the nearest corner to us. When this interaction term is removed, the respective `cses` and `meanses` coefficients must absorb this explanatory power. This is why we see the closest corner in the image of model 3 raised, as `cses` coefficient, for example, no longer holds the pure predictive power of the variable.
+
+**Exercise 27.** This exercise demonstrates the application of generalized linear mixed models in the context of longitudinal designs. It considers the data of 90 patients who were hospitalized for a first-episode schizophrenia at the Government General Hospital in Madras, India, during the period 1981-1982. *The Madras Longitudinal Schizophrenia Study* (Thara et al., 1994) investigates the presence or absence of (positive or negative) symptoms through monthly assessments during the first year after hospitalization. The file `madras-data.txt` contains the following columns:
+
+```{r echo=F}
+dat <- read.table("../madras-data.txt", header=T)
+dat$id <- factor(dat$id)
+optm <- glmerControl(optimizer = c("bobyqa"))
+```
+
+
+---------   -----------------------------------------------------------
+Variable    Descriptor
+---------   -----------------------------------------------------------
+ `id`          Patient ID
+ 
+ `y`           symptom indicator (1 schizophrenic symptomatology present; 0 otherwise)
+ 
+ `month`        months since hospitalization
+ 
+ `age`          age at onset (1 age less than 20 years; 0 otherwise)
+ 
+ `gender`       gender (1 female; 0 male)
+---------   -----------------------------------------------------------
+
+a. The description of the data by a base model (glmm.1) with random intercept (random intercept model) leads to the following model equations:
+
+
+$$\begin{aligned}
+\text{(Level 1) }\ \ \ \ \ g(E(y_{ij} )) &= b_{0i} + b_{1i}t_{ij}\\
+\text{(Level 2) }\ \ \ \ \ \ \ \ \ \ \ \ \ \ b_{0i} &= \beta_0 + v_{0i}\\
+b_{1i} &= \beta_1\\
+\text{(2) in (1) }\ \ \ \ \ g(E(y_{ij})) &= \beta_0 + \beta_1 t_{ij} + v_{0i} + v_{1i}
+\end{aligned}$$
+
+where $y_{ij}$ denotes the `j-th` observation of patient `i` and $t_{ij}$ denotes respective time point.
+
+Specify the model equations for a generalized model (`glmm.2`) with random slope (random slope model).
+
+$$\begin{aligned}
+\text{(Level 1) }\ \ \ \ \ g(E(y_{ij} )) &= b_{0i} + b_{1i}t_{ij}\\
+\text{(Level 2) }\ \ \ \ \ \ \ \ \ \ \ \ \ \ b_{0i} &= \beta_0 + v_{0i}\\
+b_{1i} &= \beta_1 + \beta_2ID_{j} + v_{1i}\\
+\text{(2) in (1) }\ \ \ \ \ g(E(y_{ij})) &= \beta_0 + \beta_1 t_{ij} + \beta_2ID_{j}t_{ij} v_{0i} + v_{1i}
+\end{aligned}$$
+
+
+b. Estimate parameters for both models `glmm.1` and `glmm.2` using the R-function `glmer()`, and compare the models by means of a likelihood ratio test (Note: Redefine the variable `id` as a factor.)
+
+```{r}
+glmm.1 <- glmer(y ~ month + (1|id),dat, binomial, control=optm)
+glmm.2 <- glmer(y ~ month + (1 + month|id),dat, binomial, control=optm)
+anova(glmm.1,glmm.2)
+```
+
+Above, we see that the model with a random slope per person is significantly (1% level) more powerful at predicting y than a model without a random slope.
+
+c. Consider `gender` as a covariate at the `Level 2`. Formulate 2 models (`glmm.3` and `glmm.4`) that generalize `glmm.2`, and in which `gender` influences the intercept only, or both the intercept and slope.
+
+Model 3 (Intercept and Slope)
+$$\begin{aligned}
+\text{(Level 1) }\ \ \ \ \ g(E(y_{ij} )) &= b_{0i} + b_{1i}t_{ij}\\
+\text{(Level 2) }\ \ \ \ \ \ \ \ \ \ \ \ \ \ b_{0i} &= \beta_0 + v_{0i}\\
+b_{1i} &= \beta_1 + \beta_2ID_{j} + \beta_3\text{Gender}_i +v_{1i}\\
+\text{(2) in (1) }\ \ \ \ \ g(E(y_{ij})) &= \beta_0 + \beta_1 t_{ij} + \beta_2ID_{j}t_{ij} + \beta_3\text{Gender}_it_{ij}  +v_{0i} + v_{1i}
+\end{aligned}$$
+
+
+d. Implement both models `glmm.3` and `glmm.4` in R as described above, and compare them with the previously considered models. Which of the models is preferred in the context of likelihood ratio tests?
+
+```{r}
+glmm.2 <- glmer(y ~ month + (1 + month|id),dat, binomial, control=optm)
+glmm.3 <- glmer(y ~ month + (1 + month*gender|id),dat, binomial, control=optm) # slope and intercept
+glmm.4 <- glmer(y ~ month + (1 + month + gender|id),dat, binomial, control=optm) # intercept only
+anova(glmm.3,glmm.4)
+```
+
+e. Answer the following questions on the parameter estimates for the model selected in the previous task:
+
+  * What can be inferred from results of the initial and their variability across patients?
+  
+  * Provide an interpretation of the resulting correlation of the random effects
+  
+  * Compute the expected mean odds ratio for female vs. male patients, and the probability $\pi_F$ for the presence of schizophrenic symptoms in female patients, assuming $\pi_M = 0.5$ for male patients.
+  
+f. For the selected model, calculate mean expected probability of schizophrenic symptoms separately for male and female patients and plot them graphically.
+
+```{r}
+pred.1 <- predict(glmm.1, type="response")
+pred.3 <- predict(glmm.3, type="response")
+xyplot(pred.1+pred.3 ~ month | id, dat, type="1", xlab="Month", ylab="Prob. of symptoms")
+```
+
